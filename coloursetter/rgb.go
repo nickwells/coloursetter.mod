@@ -12,7 +12,7 @@ import (
 	"github.com/nickwells/colour.mod/colour"
 	"github.com/nickwells/english.mod/english"
 	"github.com/nickwells/param.mod/v6/psetter"
-	"github.com/nickwells/strdist.mod/strdist"
+	"github.com/nickwells/strdist.mod/v2/strdist"
 )
 
 var rgbRE = regexp.MustCompile(`RGB{R: (.*), G: (.*), B: (.*)}`)
@@ -63,7 +63,8 @@ func (s RGB) suggestAltVal(val string) string {
 		}
 	}
 
-	matches := strdist.DfltHammingFinder.FindNStrLike(3, val, names...)
+	finder := strdist.DefaultFinders[strdist.CaseBlindAlgoNameHamming]
+	matches := finder.FindNStrLike(3, val, names...)
 
 	return suggestionString(matches)
 }

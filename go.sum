@@ -22,6 +22,8 @@ github.com/nickwells/param.mod/v6 v6.1.5 h1:/WU8/H85zbBVsw0sKljXyjYXsCZkDXXPEoXl
 github.com/nickwells/param.mod/v6 v6.1.5/go.mod h1:YTAUVycgGliNxgtDnp1eAyMN4vvAxbCTAlLEbi4+QPk=
 github.com/nickwells/strdist.mod v1.1.14 h1:miGKJ0y2XSCMtB3Bnk+WHf220BjOo6JrBaIueQxzstI=
 github.com/nickwells/strdist.mod v1.1.14/go.mod h1:LvWHapgiqnIutGkwlGZTZ74c1avDfQN1IF4gPQUZXkg=
+github.com/nickwells/strdist.mod/v2 v2.0.0 h1:zZTlvWdml+Ahn6Pmvz7vsbE8q5f4WqjBgz+48Ur34ws=
+github.com/nickwells/strdist.mod/v2 v2.0.0/go.mod h1:Z6tS2iEaC4w9mFxhg3CZwMebvICs+eQ2PrmPXeuCkyk=
 github.com/nickwells/tempus.mod v1.2.0 h1:74zhY4r8JieOP+1Bzh1J4+JjRkINanfeuZMUyp32gJ0=
 github.com/nickwells/tempus.mod v1.2.0/go.mod h1:k6QfE9lG7ZzsQMn5rY1eaBEljPuBwoysvxSaUqlhzYQ=
 github.com/nickwells/testhelper.mod/v2 v2.3.0 h1:b/EpnHiYr8dnr6C0a6zW2KAyHgfQ72pVw3cNklSzwxs=
