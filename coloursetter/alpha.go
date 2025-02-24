@@ -26,13 +26,16 @@ func (s Alpha) SetWithVal(_ string, paramVal string) error {
 		if errors.Is(err, strconv.ErrRange) {
 			return fmt.Errorf("%s: %w", errIntro, strconv.ErrRange)
 		}
+
 		if errors.Is(err, strconv.ErrSyntax) {
 			return fmt.Errorf("%s: %w", errIntro, strconv.ErrSyntax)
 		}
+
 		return fmt.Errorf("%s: %w", errIntro, err)
 	}
 
 	s.Value.A = uint8(v64)
+
 	return nil
 }
 

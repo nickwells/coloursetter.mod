@@ -15,6 +15,8 @@ import (
 	"github.com/nickwells/strdist.mod/v2/strdist"
 )
 
+const alternativeCount = 3
+
 var rgbRE = regexp.MustCompile(`RGB{R: (.*), G: (.*), B: (.*)}`)
 
 // RGB is used to set a colour value
@@ -40,6 +42,7 @@ func suggestionString(vals []string) string {
 		sort.Strings(vals)
 		return `, did you mean "` + english.Join(vals, `", "`, `" or "`) + `"?`
 	}
+
 	return ""
 }
 
@@ -53,18 +56,20 @@ func (s RGB) suggestAltVal(val string) string {
 		names = colour.AnyColours.ColourNames()
 	} else {
 		nameDedup := map[string]bool{}
+
 		for _, f := range s.Families {
 			for _, n := range f.ColourNames() {
 				nameDedup[n] = true
 			}
 		}
+
 		for n := range nameDedup {
 			names = append(names, n)
 		}
 	}
 
 	finder := strdist.DefaultFinders[strdist.CaseBlindAlgoNameHamming]
-	matches := finder.FindNStrLike(3, val, names...)
+	matches := finder.FindNStrLike(alternativeCount, val, names...)
 
 	return suggestionString(matches)
 }
@@ -79,11 +84,14 @@ func getColourVal(s, partName string) (uint8, error) {
 		if errors.Is(err, strconv.ErrRange) {
 			return 0, fmt.Errorf("%s: %w", errIntro, strconv.ErrRange)
 		}
+
 		if errors.Is(err, strconv.ErrSyntax) {
 			return 0, fmt.Errorf("%s: %w", errIntro, strconv.ErrSyntax)
 		}
+
 		return 0, fmt.Errorf("%s: %w", errIntro, err)
 	}
+
 	return uint8(rVal), nil
 }
 
@@ -91,18 +99,22 @@ func getColourVal(s, partName string) (uint8, error) {
 // slice. Any errors are returned as they are found.
 func getRGBVals(rgb []string) (uint8, uint8, uint8, error) {
 	var rVal, gVal, bVal uint8
+
 	rVal, err := getColourVal(rgb[1], "Red")
 	if err != nil {
 		return 0, 0, 0, err
 	}
+
 	gVal, err = getColourVal(rgb[2], "Green")
 	if err != nil {
 		return 0, 0, 0, err
 	}
+
 	bVal, err = getColourVal(rgb[3], "Blue")
 	if err != nil {
 		return 0, 0, 0, err
 	}
+
 	return rVal, gVal, bVal, nil
 }
 
@@ -118,10 +130,12 @@ func (s RGB) parseRGBString(paramVal string) error {
 	if err != nil {
 		return err
 	}
+
 	s.Value.R = rVal
 	s.Value.G = gVal
 	s.Value.B = bVal
 	s.Value.A = 0xff
+
 	return nil
 }
 
@@ -136,7 +150,9 @@ func (s RGB) SetWithVal(_ string, paramVal string) error {
 	}
 
 	var cVal color.RGBA
+
 	var err error
+
 	if s.useAnyColours() {
 		cVal, err = colour.AnyColours.Colour(strings.ToLower(paramVal))
 	} else {
@@ -153,15 +169,19 @@ func (s RGB) SetWithVal(_ string, paramVal string) error {
 			return fmt.Errorf("bad colour name (%q)%s",
 				paramVal, s.suggestAltVal(strings.ToLower(paramVal)))
 		}
+
 		return err
 	}
+
 	*s.Value = cVal
+
 	return nil
 }
 
 // AllowedValues returns a string describing the allowed values
 func (s RGB) AllowedValues() string {
 	var fName string
+
 	if !s.useAnyColours() {
 		if len(s.Families) == 1 {
 			fName = " in the " + s.Families[0].String() + " colour-name family"
@@ -170,10 +190,12 @@ func (s RGB) AllowedValues() string {
 			for _, f := range s.Families {
 				families = append(families, f.String())
 			}
+
 			fName = " in one of the " + english.Join(families, ", ", " or ") +
 				" colour-name families"
 		}
 	}
+
 	return "Either a colour name" + fName +
 		" or else a string giving the Red/Green/Blue values as follows:" +
 		" RGB{R: val, G: val, B: val} (the Alpha value is forced to 0xFF)"
@@ -199,6 +221,7 @@ func (s RGB) CheckSetter(name string) {
 	if s.Value == nil {
 		panic(intro + " the Value to be set is nil")
 	}
+
 	s.checkFamilies(intro)
 }
 
@@ -241,6 +264,7 @@ func reportDuplicateFamily(f colour.Family, indices []int) string {
 	for _, idx := range indices {
 		idxStrs = append(idxStrs, fmt.Sprintf("Families[%d]", idx))
 	}
+
 	problem += english.Join(idxStrs, ", ", " and ")
 
 	return problem
@@ -251,6 +275,7 @@ func reportDuplicateFamily(f colour.Family, indices []int) string {
 // any duplicates.
 func (s RGB) findBadFamilies() ([]string, map[colour.Family][]int) {
 	indices := map[colour.Family][]int{}
+
 	var problems []string
 
 	for i, f := range s.Families {
