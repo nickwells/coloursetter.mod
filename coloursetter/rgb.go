@@ -40,7 +40,8 @@ func (s RGB) useAnyColours() bool {
 func suggestionString(vals []string) string {
 	if len(vals) > 0 {
 		sort.Strings(vals)
-		return `, did you mean "` + english.Join(vals, `", "`, `" or "`) + `"?`
+		return ", did you mean " +
+			english.JoinQuoted(vals, ", ", " or ", `"`, `"`) + "?"
 	}
 
 	return ""
