@@ -287,7 +287,7 @@ func TestRGBCurrentValue(t *testing.T) {
 	for _, tc := range testCases {
 		s := RGB{Value: &tc.v}
 		actVal := s.CurrentValue()
-		testhelper.DiffString[string](t, tc.IDStr(), "CurrentValue",
+		testhelper.DiffString(t, tc.IDStr(), "CurrentValue",
 			actVal, tc.expVal)
 	}
 }
@@ -330,7 +330,7 @@ func TestRGBAllowedValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		actVal := tc.s.AllowedValues()
-		testhelper.DiffString[string](t, tc.IDStr(), "AllowedValue",
+		testhelper.DiffString(t, tc.IDStr(), "AllowedValue",
 			actVal, tc.expVal)
 	}
 }

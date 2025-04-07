@@ -104,14 +104,13 @@ func TestAlphaCurrentValue(t *testing.T) {
 	for _, tc := range testCases {
 		s := Alpha{Value: &tc.v}
 		actVal := s.CurrentValue()
-		testhelper.DiffString[string](t, tc.IDStr(), "CurrentValue",
-			actVal, tc.expVal)
+		testhelper.DiffString(t, tc.IDStr(), "CurrentValue", actVal, tc.expVal)
 	}
 }
 
 func TestAlphaAllowedValue(t *testing.T) {
 	s := Alpha{}
 	actVal := s.AllowedValues()
-	testhelper.DiffString[string](t, "sole test", "AllowedValue",
+	testhelper.DiffString(t, "sole test", "AllowedValue",
 		actVal, "some value in the range 0-255")
 }
