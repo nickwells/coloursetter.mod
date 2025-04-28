@@ -240,14 +240,14 @@ func TestRGBSetWithVal(t *testing.T) {
 		{
 			ID: testhelper.MkID("law green - error expected"),
 			ExpErr: testhelper.MkExpErr(`bad colour name ("law green")` +
-				`, did you mean "lawngreen", "low green" or "sap green"?`),
+				`, did you mean "lawn green", "lawngreen" or "low green"?`),
 			v:      "law green",
 			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
 		},
 		{
 			ID: testhelper.MkID("law green (x11,CGA) - error expected"),
 			ExpErr: testhelper.MkExpErr(`bad colour name ("law green")` +
-				`, did you mean "darkgreen", "lawngreen" or "low green"?`),
+				`, did you mean "lawn green", "lawngreen" or "low green"?`),
 			v:        "law green",
 			families: []colour.Family{colour.X11Colours, colour.CGAColours},
 			expVal:   color.RGBA{R: 0, G: 0, B: 0, A: 0},

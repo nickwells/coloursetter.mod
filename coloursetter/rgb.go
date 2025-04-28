@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"image/color"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/nickwells/colour.mod/colour"
 	"github.com/nickwells/english.mod/english"
 	"github.com/nickwells/param.mod/v6/psetter"
-	"github.com/nickwells/strdist.mod/v2/strdist"
 )
-
-const alternativeCount = 3
 
 var rgbRE = regexp.MustCompile(`RGB{R: (.*), G: (.*), B: (.*)}`)
 
@@ -33,18 +29,6 @@ type RGB struct {
 func (s RGB) useAnyColours() bool {
 	return len(s.Families) == 0 ||
 		(len(s.Families) == 1 && s.Families[0] == colour.AnyColours)
-}
-
-// suggestionString returns a string suggesting the supplied values or the
-// empty string if there are no values.
-func suggestionString(vals []string) string {
-	if len(vals) > 0 {
-		sort.Strings(vals)
-		return ", did you mean " +
-			english.JoinQuoted(vals, ", ", " or ", `"`, `"`) + "?"
-	}
-
-	return ""
 }
 
 // suggestAltVal will suggest a possible alternative value for the parameter
@@ -69,10 +53,7 @@ func (s RGB) suggestAltVal(val string) string {
 		}
 	}
 
-	finder := strdist.DefaultFinders[strdist.CaseBlindAlgoNameHamming]
-	matches := finder.FindNStrLike(alternativeCount, val, names...)
-
-	return suggestionString(matches)
+	return psetter.SuggestionString(psetter.SuggestedVals(val, names))
 }
 
 // getColourVal converts the colour part value string into an appropriate
@@ -140,8 +121,8 @@ func (s RGB) parseRGBString(paramVal string) error {
 	return nil
 }
 
-// SetWithVal (called when a value follows the parameter) either parses the
-// RGB value or else looks up the supplied colour name. The search is
+// SetWithVal (called with the value following the parameter) either parses
+// the RGB value or else looks up the supplied colour name. The search is
 // performed "case-blind" - all names are mapped to their lower-case
 // equivalents.
 func (s RGB) SetWithVal(_ string, paramVal string) error {
