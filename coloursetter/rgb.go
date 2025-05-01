@@ -3,7 +3,7 @@ package coloursetter
 import (
 	"errors"
 	"fmt"
-	"image/color"
+	"image/color" //nolint:misspell
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,7 +19,7 @@ var rgbRE = regexp.MustCompile(`RGB{R: (.*), G: (.*), B: (.*)}`)
 type RGB struct {
 	psetter.ValueReqMandatory
 
-	Value    *color.RGBA
+	Value    *color.RGBA //nolint:misspell
 	Families []colour.Family
 }
 
@@ -131,7 +131,7 @@ func (s RGB) SetWithVal(_ string, paramVal string) error {
 		return s.parseRGBString(paramVal)
 	}
 
-	var cVal color.RGBA
+	var cVal color.RGBA //nolint:misspell
 
 	var err error
 

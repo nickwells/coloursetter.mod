@@ -1,7 +1,7 @@
 package coloursetter
 
 import (
-	"image/color"
+	"image/color" //nolint:misspell
 	"testing"
 
 	"github.com/nickwells/colour.mod/colourtesthelper"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestAlphaCheck(t *testing.T) {
-	c := color.RGBA{}
+	c := color.RGBA{} //nolint:misspell
 
 	testCases := []struct {
 		testhelper.ID
@@ -42,17 +42,17 @@ func TestAlphaSetWithVal(t *testing.T) {
 		testhelper.ID
 		testhelper.ExpErr
 		v      string
-		expVal color.RGBA
+		expVal color.RGBA //nolint:misspell
 	}{
 		{
 			ID:     testhelper.MkID("0xff - no error expected"),
 			v:      "0xff",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0xff},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:     testhelper.MkID("0xaa - no error expected"),
 			v:      "0xaa",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0xaa},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0xaa}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("too big - error expected"),
@@ -60,7 +60,7 @@ func TestAlphaSetWithVal(t *testing.T) {
 				`cannot convert the alpha value ("0xfff") to a valid number: ` +
 					`value out of range`),
 			v:      "0xfff",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("bad number - error expected"),
@@ -68,12 +68,12 @@ func TestAlphaSetWithVal(t *testing.T) {
 				`cannot convert the alpha value ("blah") to a valid number: ` +
 					`invalid syntax`),
 			v:      "blah",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 	}
 
 	for _, tc := range testCases {
-		c := color.RGBA{}
+		c := color.RGBA{} //nolint:misspell
 		s := Alpha{
 			Value: &c,
 		}
@@ -86,17 +86,17 @@ func TestAlphaSetWithVal(t *testing.T) {
 func TestAlphaCurrentValue(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
-		v      color.RGBA
+		v      color.RGBA //nolint:misspell
 		expVal string
 	}{
 		{
 			ID:     testhelper.MkID("zero"),
-			v:      color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			v:      color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 			expVal: "0x00",
 		},
 		{
 			ID:     testhelper.MkID("255"),
-			v:      color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff},
+			v:      color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}, //nolint:misspell
 			expVal: "0xff",
 		},
 	}

@@ -3,7 +3,7 @@ package coloursetter
 import (
 	"errors"
 	"fmt"
-	"image/color"
+	"image/color" //nolint:misspell
 	"strconv"
 
 	"github.com/nickwells/param.mod/v6/psetter"
@@ -13,7 +13,7 @@ import (
 type Alpha struct {
 	psetter.ValueReqMandatory
 
-	Value *color.RGBA
+	Value *color.RGBA //nolint:misspell
 }
 
 // SetWithVal (called when a value follows the parameter) sets the Value's

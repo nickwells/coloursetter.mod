@@ -1,7 +1,7 @@
 package coloursetter
 
 import (
-	"image/color"
+	"image/color" //nolint:misspell
 	"testing"
 
 	"github.com/nickwells/colour.mod/colour"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestRGBCheck(t *testing.T) {
-	c := color.RGBA{}
+	c := color.RGBA{} //nolint:misspell
 
 	testCases := []struct {
 		testhelper.ID
@@ -158,12 +158,12 @@ func TestRGBSetWithVal(t *testing.T) {
 		testhelper.ExpErr
 		v        string
 		families []colour.Family
-		expVal   color.RGBA
+		expVal   color.RGBA //nolint:misspell
 	}{
 		{
 			ID:     testhelper.MkID("RGB{...} - no error expected"),
 			v:      "RGB{R: 0xff, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0xff, G: 0, B: 0, A: 0xff},
+			expVal: color.RGBA{R: 0xff, G: 0, B: 0, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("RGB{Red too big} - error expected"),
@@ -171,7 +171,7 @@ func TestRGBSetWithVal(t *testing.T) {
 				`cannot convert the Red value ("0xfff") to a valid number: ` +
 					`value out of range`),
 			v:      "RGB{R: 0xfff, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("RGB{Green too big} - error expected"),
@@ -179,7 +179,7 @@ func TestRGBSetWithVal(t *testing.T) {
 				`cannot convert the Green value ("0xfff") to a valid number: ` +
 					`value out of range`),
 			v:      "RGB{R: 0, G: 0xfff, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("RGB{Blue too big} - error expected"),
@@ -187,7 +187,7 @@ func TestRGBSetWithVal(t *testing.T) {
 				`cannot convert the Blue value ("0xfff") to a valid number: ` +
 					`value out of range`),
 			v:      "RGB{R: 0, G: 0, B: 0xfff}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("RGB{Red invalid} - error expected"),
@@ -195,54 +195,54 @@ func TestRGBSetWithVal(t *testing.T) {
 				`cannot convert the Red value ("xxx") to a valid number: ` +
 					`invalid syntax`),
 			v:      "RGB{R: xxx, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("RGB{missing fields} - error expected"),
 			ExpErr: testhelper.MkExpErr(
 				`cannot get the RGB values from "RGB{R: 0, B: 0}"`),
 			v:      "RGB{R: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID:     testhelper.MkID("BLUE - no error expected"),
 			v:      "BLUE",
-			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff},
+			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:     testhelper.MkID("blue - no error expected"),
 			v:      "blue",
-			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff},
+			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:     testhelper.MkID("green - no error expected"),
 			v:      "green",
-			expVal: color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff},
+			expVal: color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:       testhelper.MkID("green(X11) - no error expected"),
 			v:        "green",
 			families: []colour.Family{colour.X11Colours, colour.WebColours},
-			expVal:   color.RGBA{R: 0, G: 0xff, B: 0, A: 0xff},
+			expVal:   color.RGBA{R: 0, G: 0xff, B: 0, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:       testhelper.MkID("green(Web) - no error expected"),
 			v:        "green",
 			families: []colour.Family{colour.WebColours, colour.X11Colours},
-			expVal:   color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff},
+			expVal:   color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff}, //nolint:misspell
 		},
 		{
 			ID:     testhelper.MkID("no-such-colour - error expected"),
 			ExpErr: testhelper.MkExpErr(`bad colour name ("no-such-colour")`),
 			v:      "no-such-colour",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("law green - error expected"),
 			ExpErr: testhelper.MkExpErr(`bad colour name ("law green")` +
 				`, did you mean "lawn green", "lawngreen" or "low green"?`),
 			v:      "law green",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 		{
 			ID: testhelper.MkID("law green (x11,CGA) - error expected"),
@@ -250,36 +250,36 @@ func TestRGBSetWithVal(t *testing.T) {
 				`, did you mean "lawn green", "lawngreen" or "low green"?`),
 			v:        "law green",
 			families: []colour.Family{colour.X11Colours, colour.CGAColours},
-			expVal:   color.RGBA{R: 0, G: 0, B: 0, A: 0},
+			expVal:   color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
 		},
 	}
 
 	for _, tc := range testCases {
-		c := color.RGBA{}
+		c := color.RGBA{} //nolint:misspell
 		s := RGB{
 			Value:    &c,
 			Families: tc.families,
 		}
 		err := s.SetWithVal("", tc.v)
 		testhelper.CheckExpErr(t, err, tc)
-		colourtesthelper.DiffRGBA(t, tc.IDStr(), "color", c, tc.expVal)
+		colourtesthelper.DiffRGBA(t, tc.IDStr(), "colour", c, tc.expVal)
 	}
 }
 
 func TestRGBCurrentValue(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
-		v      color.RGBA
+		v      color.RGBA //nolint:misspell
 		expVal string
 	}{
 		{
 			ID:     testhelper.MkID("black"),
-			v:      color.RGBA{R: 0, G: 0, B: 0, A: 0xff},
+			v:      color.RGBA{R: 0, G: 0, B: 0, A: 0xff}, //nolint:misspell
 			expVal: "black",
 		},
 		{
 			ID:     testhelper.MkID("white"),
-			v:      color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff},
+			v:      color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}, //nolint:misspell
 			expVal: "white",
 		},
 	}
