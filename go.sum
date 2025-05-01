@@ -2,8 +2,8 @@ github.com/nickwells/check.mod/v2 v2.1.20 h1:DaH+acG/CqWlYF5GIpVET0MWKN2Rbovvc9+
 github.com/nickwells/check.mod/v2 v2.1.20/go.mod h1:3nVHJyq8YULVyIwJ3ykYaAnitQFOQcdYVSN13NDRqpA=
 github.com/nickwells/col.mod/v4 v4.0.3 h1:ruXO6KEEiNXgTmCaFgTlv2QNTtQc8vTs+SZxfJwa99k=
 github.com/nickwells/col.mod/v4 v4.0.3/go.mod h1:7Tdrz9mYily2ArVe0IcQulYZgEoQnEBLqMC26M2LaEg=
-github.com/nickwells/colour.mod v1.2.5 h1:vZ8b7Sw3Av1Awms1wEucT0GBq+oxMqV+kQEa/PG1L58=
-github.com/nickwells/colour.mod v1.2.5/go.mod h1:zbFlrWFXTeztLQHVtEtud9OCYB6a99qIpPncsk9KQ7k=
+github.com/nickwells/colour.mod v1.3.0 h1:zF15S6W092YMBa2kQ4O4qzjo+TPIv+TkzJtvzAotjVo=
+github.com/nickwells/colour.mod v1.3.0/go.mod h1:zbFlrWFXTeztLQHVtEtud9OCYB6a99qIpPncsk9KQ7k=
 github.com/nickwells/english.mod v1.2.1 h1:E033M7TUsgawy91iXKiYkI2GN66dt5lsELDyKOqN6uQ=
 github.com/nickwells/english.mod v1.2.1/go.mod h1:TFWBN67jRqEvYmfi65+ZOX+ZjndPtkomnN3mNaKamr4=
 github.com/nickwells/errutil.mod v1.2.17 h1:mVGwXl/IQbA5plEFEq1r6kWIWhdUyvoGEr/ZZVfuQYU=

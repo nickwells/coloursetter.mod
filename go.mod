@@ -3,7 +3,7 @@ module github.com/nickwells/coloursetter.mod
 go 1.24
 
 require (
-	github.com/nickwells/colour.mod v1.2.5
+	github.com/nickwells/colour.mod v1.3.0
 	github.com/nickwells/english.mod v1.2.1
 	github.com/nickwells/param.mod/v6 v6.3.0
 	github.com/nickwells/testhelper.mod/v2 v2.3.2
