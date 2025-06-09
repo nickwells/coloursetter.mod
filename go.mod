@@ -5,7 +5,7 @@ go 1.24
 require (
 	github.com/nickwells/colour.mod v1.3.2
 	github.com/nickwells/english.mod v1.2.3
-	github.com/nickwells/param.mod/v6 v6.4.0
+	github.com/nickwells/param.mod/v6 v6.4.1
 	github.com/nickwells/testhelper.mod/v2 v2.4.1
 )
 
