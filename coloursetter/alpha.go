@@ -50,8 +50,7 @@ func (s Alpha) CurrentValue() string {
 }
 
 // CheckSetter panics if the setter has not been properly created - if the
-// Value is nil, if the base unit is invalid or if one of the check functions
-// is nil.
+// Value is nil.
 func (s Alpha) CheckSetter(name string) {
 	intro := name + ": coloursetter.Alpha Check failed:"
 

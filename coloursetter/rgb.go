@@ -195,8 +195,9 @@ func (s RGB) CurrentValue() string {
 }
 
 // CheckSetter panics if the setter has not been properly created - if the
-// Value is nil, if the base unit is invalid or if one of the check functions
-// is nil.
+// Value is nil or the Families value is incorrect. Possible problems with
+// the Families member include duplicate Families in the set or an invalid
+// Family constant being used.
 func (s RGB) CheckSetter(name string) {
 	intro := name + ": coloursetter.RGB Check failed:"
 
