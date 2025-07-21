@@ -2,267 +2,51 @@ package coloursetter
 
 import (
 	"image/color" //nolint:misspell
+	"math"
 	"testing"
 
-	"github.com/nickwells/colour.mod/colour"
-	"github.com/nickwells/colour.mod/colourtesthelper"
+	"github.com/nickwells/colour.mod/v2/colour"
+	"github.com/nickwells/param.mod/v6/param"
+	"github.com/nickwells/param.mod/v6/paramtest"
 	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
-func TestRGBCheck(t *testing.T) {
-	c := color.RGBA{} //nolint:misspell
-
-	testCases := []struct {
-		testhelper.ID
-		testhelper.ExpPanic
-		v RGB
-	}{
-		{
-			ID: testhelper.MkID("No panic expected, no Families"),
-			v:  RGB{Value: &c},
-		},
-		{
-			ID: testhelper.MkID("No panic expected, Families={Any}"),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.AnyColours,
-				},
-			},
-		},
-		{
-			ID: testhelper.MkID("No panic expected, Families={X11,Web}"),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.X11Colours,
-					colour.WebColours,
-				},
-			},
-		},
-		{
-			ID: testhelper.MkID("Panic expected, Families={X11,X11}"),
-			ExpPanic: testhelper.MkExpPanic(
-				"test-param: coloursetter.RGB Check failed: 1 problem found:",
-				"X11Colours appears 2 times, at: Families[0] and Families[1]"),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.X11Colours,
-					colour.X11Colours,
-				},
-			},
-		},
-		{
-			ID: testhelper.MkID("Panic expected, nil Value"),
-			ExpPanic: testhelper.MkExpPanic(
-				"test-param: coloursetter.RGB Check failed:" +
-					" the Value to be set is nil"),
-			v: RGB{},
-		},
-		{
-			ID: testhelper.MkID("Panic expected, Families={Family(99)}"),
-			ExpPanic: testhelper.MkExpPanic(
-				"test-param: coloursetter.RGB Check failed: 1 problem found:",
-				"bad Family: 99 (at Families[0])"),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.Family(99),
-				},
-			},
-		},
-		{
-			ID: testhelper.MkID("Panic expected, Families={99,99}"),
-			ExpPanic: testhelper.MkExpPanic(
-				"test-param: coloursetter.RGB Check failed: 3 problems found:",
-				"bad Family: 99 (at Families[0])",
-				"bad Family: 99 (at Families[1])",
-				"and",
-				"BadFamily:99 appears 2 times, at: Families[0] and Families[1]",
-			),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.Family(99),
-					colour.Family(99),
-				},
-			},
-		},
-		{
-			ID: testhelper.MkID("Panic expected, Families={Any,X11}"),
-			ExpPanic: testhelper.MkExpPanic(
-				"test-param: coloursetter.RGB Check failed: 1 problem found:",
-				"AnyColour (at Families[0]) is not the only Family",
-			),
-			v: RGB{
-				Value: &c,
-				Families: []colour.Family{
-					colour.AnyColours,
-					colour.X11Colours,
-				},
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		panicked, panicVal := testhelper.PanicSafe(func() {
-			tc.v.CheckSetter("test-param")
-		})
-		testhelper.CheckExpPanic(t, panicked, panicVal, tc)
-	}
-}
-
-func TestRGBUseAnyColour(t *testing.T) {
+func TestRGBUseStandardColour(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
 		v   RGB
 		exp bool
 	}{
 		{
-			ID:  testhelper.MkID("nil entry: useAnyColours==true"),
+			ID:  testhelper.MkID("nil entry: useStandardColours==true"),
 			exp: true,
 		},
 		{
-			ID: testhelper.MkID("empty entry: useAnyColours==true"),
+			ID: testhelper.MkID("empty entry: useStandardColours==true"),
 			v: RGB{
-				Families: []colour.Family{},
+				Families: colour.Families{},
 			},
 			exp: true,
 		},
 		{
-			ID: testhelper.MkID("one entry (AnyColours): useAnyColours==true"),
+			ID: testhelper.MkID("one entry (StandardColours): useStandardColours==true"),
 			v: RGB{
-				Families: []colour.Family{colour.AnyColours},
+				Families: colour.Families{colour.StandardColours},
 			},
 			exp: true,
 		},
 		{
-			ID: testhelper.MkID("one entry (X11Colours): useAnyColours==false"),
+			ID: testhelper.MkID("one entry (X11Colours): useStandardColours==false"),
 			v: RGB{
-				Families: []colour.Family{colour.X11Colours},
+				Families: colour.Families{colour.X11Colours},
 			},
 			exp: false,
 		},
 	}
 
 	for _, tc := range testCases {
-		act := tc.v.useAnyColours()
-		testhelper.DiffBool(t, tc.IDStr(), "useAnyColours", act, tc.exp)
-	}
-}
-
-func TestRGBSetWithVal(t *testing.T) {
-	testCases := []struct {
-		testhelper.ID
-		testhelper.ExpErr
-		v        string
-		families []colour.Family
-		expVal   color.RGBA //nolint:misspell
-	}{
-		{
-			ID:     testhelper.MkID("RGB{...} - no error expected"),
-			v:      "RGB{R: 0xff, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0xff, G: 0, B: 0, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("RGB{Red too big} - error expected"),
-			ExpErr: testhelper.MkExpErr(
-				`cannot convert the Red value ("0xfff") to a valid number: ` +
-					`value out of range`),
-			v:      "RGB{R: 0xfff, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("RGB{Green too big} - error expected"),
-			ExpErr: testhelper.MkExpErr(
-				`cannot convert the Green value ("0xfff") to a valid number: ` +
-					`value out of range`),
-			v:      "RGB{R: 0, G: 0xfff, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("RGB{Blue too big} - error expected"),
-			ExpErr: testhelper.MkExpErr(
-				`cannot convert the Blue value ("0xfff") to a valid number: ` +
-					`value out of range`),
-			v:      "RGB{R: 0, G: 0, B: 0xfff}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("RGB{Red invalid} - error expected"),
-			ExpErr: testhelper.MkExpErr(
-				`cannot convert the Red value ("xxx") to a valid number: ` +
-					`invalid syntax`),
-			v:      "RGB{R: xxx, G: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("RGB{missing fields} - error expected"),
-			ExpErr: testhelper.MkExpErr(
-				`cannot get the RGB values from "RGB{R: 0, B: 0}"`),
-			v:      "RGB{R: 0, B: 0}",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID:     testhelper.MkID("BLUE - no error expected"),
-			v:      "BLUE",
-			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID:     testhelper.MkID("blue - no error expected"),
-			v:      "blue",
-			expVal: color.RGBA{R: 0, G: 0, B: 0xff, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID:     testhelper.MkID("green - no error expected"),
-			v:      "green",
-			expVal: color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID:       testhelper.MkID("green(X11) - no error expected"),
-			v:        "green",
-			families: []colour.Family{colour.X11Colours, colour.WebColours},
-			expVal:   color.RGBA{R: 0, G: 0xff, B: 0, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID:       testhelper.MkID("green(Web) - no error expected"),
-			v:        "green",
-			families: []colour.Family{colour.WebColours, colour.X11Colours},
-			expVal:   color.RGBA{R: 0, G: 0x80, B: 0, A: 0xff}, //nolint:misspell
-		},
-		{
-			ID:     testhelper.MkID("no-such-colour - error expected"),
-			ExpErr: testhelper.MkExpErr(`bad colour name ("no-such-colour")`),
-			v:      "no-such-colour",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("law green - error expected"),
-			ExpErr: testhelper.MkExpErr(`bad colour name ("law green")` +
-				`, did you mean "lawn green", "lawngreen" or "low green"?`),
-			v:      "law green",
-			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-		{
-			ID: testhelper.MkID("law green (x11,CGA) - error expected"),
-			ExpErr: testhelper.MkExpErr(`bad colour name ("law green")` +
-				`, did you mean "lawn green", "lawngreen" or "low green"?`),
-			v:        "law green",
-			families: []colour.Family{colour.X11Colours, colour.CGAColours},
-			expVal:   color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
-		},
-	}
-
-	for _, tc := range testCases {
-		c := color.RGBA{} //nolint:misspell
-		s := RGB{
-			Value:    &c,
-			Families: tc.families,
-		}
-		err := s.SetWithVal("", tc.v)
-		testhelper.CheckExpErr(t, err, tc)
-		colourtesthelper.DiffRGBA(t, tc.IDStr(), "colour", c, tc.expVal)
+		act := tc.v.useStandardColours()
+		testhelper.DiffBool(t, tc.IDStr(), "useStandardColours", act, tc.exp)
 	}
 }
 
@@ -292,45 +76,308 @@ func TestRGBCurrentValue(t *testing.T) {
 	}
 }
 
-func TestRGBAllowedValue(t *testing.T) {
-	AVPrefix := "Either a colour name"
-	AVSuffix := " or else a string giving the Red/Green/Blue values" +
-		" as follows:" +
-		" RGB{R: val, G: val, B: val}" +
-		" (the Alpha value is forced to 0xFF)"
-	testCases := []struct {
-		testhelper.ID
-		s      RGB
-		expVal string
-	}{
+const (
+	updFlagNameRGB     = "upd-gf-RGB"
+	keepBadFlagNameRGB = "keep-bad-RGB"
+)
+
+var commonGFCRGB = testhelper.GoldenFileCfg{
+	DirNames:               []string{"testdata", "RGB"},
+	Pfx:                    "gf",
+	Sfx:                    "txt",
+	UpdFlagName:            updFlagNameRGB,
+	KeepBadResultsFlagName: keepBadFlagNameRGB,
+}
+
+func init() {
+	commonGFCRGB.AddUpdateFlag()
+	commonGFCRGB.AddKeepBadResultsFlag()
+}
+
+func TestRGBSetter(t *testing.T) {
+	const dfltParamName = "param-name"
+
+	dfltVal := color.RGBA{R: math.MaxUint8, A: math.MaxUint8} //nolint:misspell
+	val := dfltVal
+
+	testCases := []paramtest.Setter{
 		{
-			ID:     testhelper.MkID("AnyColours"),
-			expVal: AVPrefix + AVSuffix,
+			ID: testhelper.MkID("value not set"),
+			ExpPanic: testhelper.MkExpPanic(
+				"coloursetter.RGB Check failed: RGB.Value: is nil"),
+			PSetter: RGB{},
 		},
 		{
-			ID: testhelper.MkID("X11"),
-			s:  RGB{Families: []colour.Family{colour.X11Colours}},
-			expVal: AVPrefix +
-				" in the X11 colour-name family" +
-				AVSuffix,
+			ID: testhelper.MkID("bad families - nonesuch"),
+			ExpPanic: testhelper.MkExpPanic(
+				"coloursetter.RGB Check failed: RGB.Families: 1 problem found:",
+				`"nonesuch" is not a valid Family (at position 0)`,
+			),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
+					colour.Family("nonesuch"),
+				},
+			},
 		},
 		{
-			ID: testhelper.MkID("X11,Web"),
-			s: RGB{
-				Families: []colour.Family{
+			ID: testhelper.MkID("bad families - duplicates"),
+			ExpPanic: testhelper.MkExpPanic(
+				"param-name: coloursetter.RGB Check failed: RGB.Families:" +
+					" 1 problem found:" +
+					` "CGA" appears 2 times in the Families list,` +
+					" at positions: [1 3]"),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
 					colour.X11Colours,
+					colour.CGAColours,
+					colour.WebColours,
+					colour.CGAColours,
+				},
+			},
+		},
+		{
+			ID: testhelper.MkID("bad families and duplicates"),
+			ExpPanic: testhelper.MkExpPanic(
+				"param-name: coloursetter.RGB Check failed: RGB.Families:" +
+					" 2 problems found:" +
+					` "CGA" appears 2 times in the Families list,` +
+					" at positions: [1 3]" +
+					" and" +
+					` "nonesuch" is not a valid Family (at position 0)`),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
+					colour.Family("nonesuch"),
+					colour.CGAColours,
+					colour.WebColours,
+					colour.CGAColours,
+				},
+			},
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "blac",
+			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
+				` did you mean "black" or "black ink"?`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.nonStd-CGA"),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
+					colour.CGAColours,
+				},
+			},
+			ParamVal: "blac",
+			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
+				` did you mean "black"?`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.nonStd-CGAAndWeb"),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
+					colour.CGAColours,
 					colour.WebColours,
 				},
 			},
-			expVal: AVPrefix +
-				" in one of the X11 or Web colour-name families" +
-				AVSuffix,
+			ParamVal: "blac",
+			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
+				` did you mean "black"?`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.std.colourName"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "black",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.nonStd-CGAAndWeb"),
+			PSetter: RGB{
+				Value: &val,
+				Families: colour.Families{
+					colour.CGAColours,
+					colour.WebColours,
+				},
+			},
+			ParamVal: "black",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.familyColour"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "pantone:black olive",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.nonStdFamilyColour"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "crayola:banana mania",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.R"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGB{R: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.R.withSpace"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: " RGB { R : 0xf } ",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.rgb.R"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "rgb{R: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.rgb.R.withSpace"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: " rgb { R : 0xf } ",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.G"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGB{G: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.B"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGB{B: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.A"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGB{A: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGB.ARBG"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGB{a: 0xf, r: 0xf, b: 0xf, g: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.goodval.RGBA.ARBG"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A: 0xf, R: 0xf, B: 0xf, G: 0xf}",
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.no-colon"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A 0xf, R: 0xf, B: 0xf, G: 0xf}",
+			SetWithValErr: testhelper.MkExpErr(
+				`bad colour component: "A 0xf",`,
+				`the name and value should be separated by a colon(:)`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.unknown-component"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{X: 0xf, R: 0xf, B: 0xf, G: 0xf}",
+			SetWithValErr: testhelper.MkExpErr(
+				`unknown colour component: "X", allowed values: A, B, G or R`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.too-big"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A: 0x100, R: 0xf, B: 0xf, G: 0xf}",
+			SetWithValErr: testhelper.MkExpErr(
+				`cannot convert the A value ("0x100") to a valid number:`,
+				` value out of range`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.negative"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A: -1, R: 0xf, B: 0xf, G: 0xf}",
+			SetWithValErr: testhelper.MkExpErr(
+				`cannot convert the A value ("-1") to a valid number:`,
+				` invalid syntax`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.blah"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A: blah, R: 0xf, B: 0xf, G: 0xf}",
+			SetWithValErr: testhelper.MkExpErr(
+				`cannot convert the A value ("blah") to a valid number:`,
+				` invalid syntax`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.RGB.missing.brace"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "RGBA{A: 0xf, R: 0xf, B: 0xf, G: 0xf",
+			SetWithValErr: testhelper.MkExpErr(
+				`the parameter value starts with "RGBA{"`,
+				` but has no trailing '}'`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.famAndCol.badFam"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "pontone:black",
+			SetWithValErr: testhelper.MkExpErr(
+				`bad colour family name: "pontone" `,
+				`did you mean "pantone"?`),
+		},
+		{
+			ID: testhelper.MkID("goodSetter.badval.famAndCol.badCol"),
+			PSetter: RGB{
+				Value: &val,
+			},
+			ParamVal: "web:blac",
+			SetWithValErr: testhelper.MkExpErr(
+				`bad colour name: "blac" `,
+				`did you mean "black"?`),
 		},
 	}
 
 	for _, tc := range testCases {
-		actVal := tc.s.AllowedValues()
-		testhelper.DiffString(t, tc.IDStr(), "AllowedValue",
-			actVal, tc.expVal)
+		f := func(t *testing.T) {
+			if tc.ParamName == "" {
+				tc.ParamName = dfltParamName
+			}
+
+			tc.SetVR(param.Mandatory)
+			tc.GFC = commonGFCRGB
+			val = dfltVal // reset the value to its default value
+
+			tc.Test(t)
+		}
+		t.Run(tc.IDStr(), f)
 	}
 }

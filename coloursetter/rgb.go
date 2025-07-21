@@ -4,31 +4,37 @@ import (
 	"errors"
 	"fmt"
 	"image/color" //nolint:misspell
+	"maps"
+	"math"
 	"regexp"
-	"strconv"
+	"slices"
 	"strings"
 
-	"github.com/nickwells/colour.mod/colour"
+	"github.com/nickwells/colour.mod/v2/colour"
 	"github.com/nickwells/english.mod/english"
 	"github.com/nickwells/param.mod/v6/psetter"
 )
 
-var rgbRE = regexp.MustCompile(`RGB{R: (.*), G: (.*), B: (.*)}`)
+var rgbIntroRE = regexp.MustCompile(
+	`^[[:space:]]*[rR][gG][bB]([aA])?[[:space:]]*\{`)
+var rgbOutroRE = regexp.MustCompile(`[[:space:]]*\}[[:space:]]*$`)
 
 // RGB is used to set a colour value
+//
+//nolint:misspell
 type RGB struct {
 	psetter.ValueReqMandatory
 
-	Value    *color.RGBA //nolint:misspell
-	Families []colour.Family
+	Value    *color.RGBA
+	Families colour.Families
 }
 
-// useAnyColours returns true if the AnyColours family is to be used. This
-// will be the case if there are no families given or the only family given
-// is the AnyColours family
-func (s RGB) useAnyColours() bool {
+// useStandardColours returns true if the StandardColours family is to be
+// used. This will be the case if there are no families given or the only
+// family given is the StandardColours family
+func (s RGB) useStandardColours() bool {
 	return len(s.Families) == 0 ||
-		(len(s.Families) == 1 && s.Families[0] == colour.AnyColours)
+		(len(s.Families) == 1 && s.Families[0] == colour.StandardColours)
 }
 
 // suggestAltVal will suggest a possible alternative value for the parameter
@@ -37,13 +43,23 @@ func (s RGB) useAnyColours() bool {
 func (s RGB) suggestAltVal(val string) string {
 	var names []string
 
-	if s.useAnyColours() {
-		names = colour.AnyColours.ColourNames()
+	var err error
+
+	if s.useStandardColours() {
+		names, err = colour.StandardColours.ColourNames()
+		if err != nil {
+			return ""
+		}
 	} else {
 		nameDedup := map[string]bool{}
 
 		for _, f := range s.Families {
-			for _, n := range f.ColourNames() {
+			fNames, err := f.ColourNames()
+			if err != nil {
+				return ""
+			}
+
+			for _, n := range fNames {
 				nameDedup[n] = true
 			}
 		}
@@ -56,90 +72,99 @@ func (s RGB) suggestAltVal(val string) string {
 	return psetter.SuggestionString(psetter.SuggestedVals(val, names))
 }
 
-// getColourVal converts the colour part value string into an appropriate
-// value. It returns a non-nil error if the value cannot be converted.
-func getColourVal(s, partName string) (uint8, error) {
-	rVal, err := strconv.ParseUint(s, 0, 8)
-	if err != nil {
-		errIntro := fmt.Sprintf(
-			"cannot convert the %s value (%q) to a valid number", partName, s)
-		if errors.Is(err, strconv.ErrRange) {
-			return 0, fmt.Errorf("%s: %w", errIntro, strconv.ErrRange)
-		}
-
-		if errors.Is(err, strconv.ErrSyntax) {
-			return 0, fmt.Errorf("%s: %w", errIntro, strconv.ErrSyntax)
-		}
-
-		return 0, fmt.Errorf("%s: %w", errIntro, err)
-	}
-
-	return uint8(rVal), nil
-}
-
-// getRGBVals parses and returns the red, green and blue values from the
-// slice. Any errors are returned as they are found.
-func getRGBVals(rgb []string) (uint8, uint8, uint8, error) {
-	var rVal, gVal, bVal uint8
-
-	rVal, err := getColourVal(rgb[1], "Red")
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	gVal, err = getColourVal(rgb[2], "Green")
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	bVal, err = getColourVal(rgb[3], "Blue")
-	if err != nil {
-		return 0, 0, 0, err
-	}
-
-	return rVal, gVal, bVal, nil
-}
-
 // parseRGBString converts a string like: "RGB{R: val, G: val, B: val}" into
 // the corresponding RGB value and sets the Setter's Value appropriately.
 func (s RGB) parseRGBString(paramVal string) error {
-	rgb := rgbRE.FindStringSubmatch(paramVal)
-	if rgb == nil || len(rgb) != 4 {
-		return fmt.Errorf("cannot get the RGB values from %q", paramVal)
+	strippedVal := rgbIntroRE.ReplaceAllString(paramVal, "")
+	strippedVal = rgbOutroRE.ReplaceAllString(strippedVal, "")
+
+	components := map[string]uint8{
+		"R": 0,
+		"G": 0,
+		"B": 0,
+		"A": math.MaxUint8,
 	}
 
-	rVal, gVal, bVal, err := getRGBVals(rgb)
-	if err != nil {
-		return err
+	for part := range strings.SplitSeq(strippedVal, ",") {
+		name, val, ok := strings.Cut(part, ":")
+		if !ok {
+			return fmt.Errorf(
+				"bad colour component: %q,"+
+					" the name and value should be separated by a colon(:)",
+				part)
+		}
+
+		name = strings.TrimSpace(name)
+		name = strings.ToUpper(name)
+
+		if _, valid := components[name]; !valid {
+			aval := slices.Collect(maps.Keys(components))
+			slices.Sort(aval)
+
+			return fmt.Errorf(
+				"unknown colour component: %q, allowed values: %s",
+				name, english.Join(aval, ", ", " or "))
+		}
+
+		val = strings.TrimSpace(val)
+
+		parsedVal, err := parseColourPart(val, name)
+		if err != nil {
+			return err
+		}
+
+		components[name] = parsedVal
 	}
 
-	s.Value.R = rVal
-	s.Value.G = gVal
-	s.Value.B = bVal
-	s.Value.A = 0xff
+	s.Value.R = components["R"]
+	s.Value.G = components["G"]
+	s.Value.B = components["B"]
+	s.Value.A = components["A"]
 
 	return nil
 }
 
-// SetWithVal (called with the value following the parameter) either parses
-// the RGB value or else looks up the supplied colour name. The search is
-// performed "case-blind" - all names are mapped to their lower-case
-// equivalents.
-func (s RGB) SetWithVal(_ string, paramVal string) error {
-	if strings.HasPrefix(paramVal, "RGB{") &&
-		strings.HasSuffix(paramVal, "}") {
-		return s.parseRGBString(paramVal)
+// setByFamilyAndColourName sets the RGB from the family and colour names. It
+// returns a non-nil error if the value can not be set.
+func (s RGB) setByFamilyAndColourName(fName, cName string) error {
+	f := colour.Family(fName)
+	if !f.IsValid() {
+		return fmt.Errorf("bad colour family name: %q %s",
+			fName,
+			psetter.SuggestionString(
+				psetter.SuggestedVals(fName,
+					slices.Collect(maps.Keys(colour.AllowedFamilies())),
+				)))
 	}
 
+	cVal, err := f.Colour(strings.ToLower(cName))
+	if err != nil {
+		altNames := ""
+		if cNames, err := f.ColourNames(); err == nil {
+			altNames = psetter.SuggestionString(
+				psetter.SuggestedVals(cName, cNames))
+		}
+
+		return fmt.Errorf("bad colour name: %q, %s %s", cName, err, altNames)
+	}
+
+	*s.Value = cVal
+
+	return nil
+}
+
+// setByColourName sets the RGB from the colour name. It
+// returns a non-nil error if the value can not be set.
+func (s RGB) setByColourName(cName string) error {
 	var cVal color.RGBA //nolint:misspell
 
 	var err error
 
-	if s.useAnyColours() {
-		cVal, err = colour.AnyColours.Colour(strings.ToLower(paramVal))
+	if s.useStandardColours() {
+		cVal, err = colour.StandardColors.Colour(strings.ToLower(cName))
 	} else {
 		for _, f := range s.Families {
-			cVal, err = f.Colour(strings.ToLower(paramVal))
+			cVal, err = f.Colour(strings.ToLower(cName))
 			if err == nil {
 				break
 			}
@@ -147,9 +172,9 @@ func (s RGB) SetWithVal(_ string, paramVal string) error {
 	}
 
 	if err != nil {
-		if errors.Is(err, colour.ErrBadColour) {
+		if errors.Is(err, errors.New(colour.BadColourName)) {
 			return fmt.Errorf("bad colour name (%q)%s",
-				paramVal, s.suggestAltVal(strings.ToLower(paramVal)))
+				cName, s.suggestAltVal(strings.ToLower(cName)))
 		}
 
 		return err
@@ -160,33 +185,52 @@ func (s RGB) SetWithVal(_ string, paramVal string) error {
 	return nil
 }
 
+// SetWithVal (called with the value following the parameter) either parses
+// the RGB value or else looks up the supplied colour name. The search is
+// performed "case-blind" - all names are mapped to their lower-case
+// equivalents.
+func (s RGB) SetWithVal(_ string, paramVal string) error {
+	if rgbIntroRE.MatchString(paramVal) {
+		if !rgbOutroRE.MatchString(paramVal) {
+			return fmt.Errorf(
+				"the parameter value starts with %q but has no trailing '}'",
+				rgbIntroRE.FindString(paramVal))
+		}
+
+		return s.parseRGBString(paramVal)
+	}
+
+	if familyName, colourName, found := strings.Cut(paramVal, ":"); found {
+		return s.setByFamilyAndColourName(familyName, colourName)
+	}
+
+	return s.setByColourName(paramVal)
+}
+
 // AllowedValues returns a string describing the allowed values
 func (s RGB) AllowedValues() string {
-	var fName string
+	fName := " in the standard colour-name families"
 
-	if !s.useAnyColours() {
+	if !s.useStandardColours() {
 		if len(s.Families) == 1 {
-			fName = " in the " + s.Families[0].String() + " colour-name family"
+			fName = " in the " + string(s.Families[0]) + " colour-name family"
 		} else {
-			var families []string
-			for _, f := range s.Families {
-				families = append(families, f.String())
-			}
-
-			fName = " in one of the " + english.Join(families, ", ", " or ") +
-				" colour-name families"
+			fName = " in one of the colour-name families: " +
+				s.Families.String()
 		}
 	}
 
 	return "Either a colour name" + fName +
-		" or else a string giving the Red/Green/Blue values as follows:" +
-		" RGB{R: val, G: val, B: val} (the Alpha value is forced to 0xFF)"
+		" or a family name, a colon (:) and a colour name" +
+		" or else a string giving the Red/Green/Blue/Alpha values as follows:" +
+		" RGB{R: #, G: #, B: #, A: #} (Red, Green and Blue default to 0," +
+		" Alpha defaults to 0xFF)"
 }
 
 // ValDescribe returns a string describing the value that can follow the
 // parameter
 func (s RGB) ValDescribe() string {
-	return "colour-name"
+	return "colour"
 }
 
 // CurrentValue returns the current setting of the parameter value
@@ -202,79 +246,10 @@ func (s RGB) CheckSetter(name string) {
 	intro := name + ": coloursetter.RGB Check failed:"
 
 	if s.Value == nil {
-		panic(intro + " the Value to be set is nil")
+		panic(intro + " RGB.Value: is nil")
 	}
 
-	s.checkFamilies(intro)
-}
-
-// checkFamilies performs checks on the Colour.Families value. It
-// panics, reporting all the problems found, if any problem is found.
-func (s RGB) checkFamilies(intro string) {
-	if s.useAnyColours() {
-		return
+	if err := s.Families.Check(); err != nil {
+		panic(intro + " RGB.Families: " + err.Error())
 	}
-
-	problems, perFamilyIndices := s.findBadFamilies()
-
-	for f, indices := range perFamilyIndices {
-		if len(indices) > 1 {
-			problems = append(problems, reportDuplicateFamily(f, indices))
-		}
-	}
-
-	if len(problems) > 0 {
-		panic(fmt.Sprintf("%s %d %s found:\n%s",
-			intro,
-			len(problems), english.Plural("problem", len(problems)),
-			english.Join(problems, "\n", "\nand\n")))
-	}
-}
-
-// reportDuplicateFamily generates a string describing the duplicate
-// occurrence of the Family in the setter's Families list.
-func reportDuplicateFamily(f colour.Family, indices []int) string {
-	famName := ""
-	if f.IsValid() {
-		famName = f.Literal()
-	} else {
-		famName = f.String()
-	}
-
-	problem := fmt.Sprintf("%s appears %d times, at: ", famName, len(indices))
-
-	idxStrs := []string{}
-	for _, idx := range indices {
-		idxStrs = append(idxStrs, fmt.Sprintf("Families[%d]", idx))
-	}
-
-	problem += english.Join(idxStrs, ", ", " and ")
-
-	return problem
-}
-
-// findBadFamilies records problems with individual Family values and also
-// records the indexes where each Family instance appears so we can notify of
-// any duplicates.
-func (s RGB) findBadFamilies() ([]string, map[colour.Family][]int) {
-	indices := map[colour.Family][]int{}
-
-	var problems []string
-
-	for i, f := range s.Families {
-		indices[f] = append(indices[f], i)
-
-		if !f.IsValid() {
-			problems = append(problems,
-				fmt.Sprintf("bad Family: %d (at Families[%d])", f, i))
-		}
-
-		if f == colour.AnyColours {
-			problems = append(problems,
-				fmt.Sprintf(
-					"AnyColour (at Families[%d]) is not the only Family", i))
-		}
-	}
-
-	return problems, indices
 }

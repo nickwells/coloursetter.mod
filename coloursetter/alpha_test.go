@@ -4,7 +4,7 @@ import (
 	"image/color" //nolint:misspell
 	"testing"
 
-	"github.com/nickwells/colour.mod/colourtesthelper"
+	"github.com/nickwells/colour.mod/v2/colourtesthelper"
 	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 

@@ -1,0 +1,1 @@
+"Web:red", "HTML:red", "X11:red" or "CGA:high red"

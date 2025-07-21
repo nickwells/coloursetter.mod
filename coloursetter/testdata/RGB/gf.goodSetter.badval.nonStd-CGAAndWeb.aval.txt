@@ -1,0 +1,1 @@
+Either a colour name in one of the colour-name families: CGA and Web or a family name, a colon (:) and a colour name or else a string giving the Red/Green/Blue/Alpha values as follows: RGB{R: #, G: #, B: #, A: #} (Red, Green and Blue default to 0, Alpha defaults to 0xFF)
