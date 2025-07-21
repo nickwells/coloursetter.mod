@@ -1,4 +1,4 @@
-module github.com/nickwells/coloursetter.mod
+module github.com/nickwells/coloursetter.mod/v2
 
 go 1.24
 
