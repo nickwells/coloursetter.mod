@@ -237,14 +237,14 @@ func TestRGBSetter(t *testing.T) {
 			ParamVal: " RGB { R : 0xf } ",
 		},
 		{
-			ID: testhelper.MkID("goodSetter.goodval.rgb.R"),
+			ID: testhelper.MkID("goodSetter.goodval.RGB.lc.R"),
 			PSetter: RGB{
 				Value: &val,
 			},
 			ParamVal: "rgb{R: 0xf}",
 		},
 		{
-			ID: testhelper.MkID("goodSetter.goodval.rgb.R.withSpace"),
+			ID: testhelper.MkID("goodSetter.goodval.RGB.lc.R.withSpace"),
 			PSetter: RGB{
 				Value: &val,
 			},
