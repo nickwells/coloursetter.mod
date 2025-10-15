@@ -36,7 +36,7 @@ func (s Alpha) AllowedValues() string {
 
 // CurrentValue returns the current setting of the parameter value
 func (s Alpha) CurrentValue() string {
-	return fmt.Sprintf("0x%02x", s.Value.A)
+	return fmt.Sprintf("%#02x", s.Value.A)
 }
 
 // CheckSetter panics if the setter has not been properly created - if the
