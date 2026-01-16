@@ -161,7 +161,7 @@ func (s RGB) setByColourName(cName string) error {
 	var err error
 
 	if s.useStandardColours() {
-		cVal, err = colour.StandardColors.Colour(strings.ToLower(cName))
+		cVal, err = colour.StandardColours.Colour(strings.ToLower(cName))
 	} else {
 		for _, f := range s.Families {
 			cVal, err = f.Colour(strings.ToLower(cName))
