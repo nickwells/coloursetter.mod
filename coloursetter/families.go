@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/nickwells/colour.mod/v2/colour"
-	"github.com/nickwells/param.mod/v6/psetter"
+	"github.com/nickwells/param.mod/v7/psetter"
 )
 
 var familyAllowedValues = psetter.AllowedVals[string](colour.AllowedFamilies())

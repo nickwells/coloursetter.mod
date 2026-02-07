@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image/color" //nolint:misspell
 
-	"github.com/nickwells/param.mod/v6/psetter"
+	"github.com/nickwells/param.mod/v7/psetter"
 )
 
 // Alpha is used to set an RGBA colour's alpha value

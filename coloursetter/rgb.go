@@ -12,7 +12,7 @@ import (
 
 	"github.com/nickwells/colour.mod/v2/colour"
 	"github.com/nickwells/english.mod/english"
-	"github.com/nickwells/param.mod/v6/psetter"
+	"github.com/nickwells/param.mod/v7/psetter"
 )
 
 var rgbIntroRE = regexp.MustCompile(
