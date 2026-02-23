@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color" //nolint:misspell
 
+	"github.com/nickwells/colour.mod/v2/colour"
 	"github.com/nickwells/param.mod/v7/psetter"
 )
 
@@ -19,7 +20,7 @@ type Alpha struct {
 // SetWithVal (called when a value follows the parameter) sets the Value's
 // alpha to the result of converting the passed string to a uint8.
 func (s Alpha) SetWithVal(_ string, paramVal string) error {
-	alpha, err := parseColourPart(paramVal, "alpha")
+	alpha, err := colour.ParseColourPart(paramVal, "alpha")
 	if err != nil {
 		return err
 	}

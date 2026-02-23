@@ -57,7 +57,8 @@ func TestAlphaSetWithVal(t *testing.T) {
 		{
 			ID: testhelper.MkID("too big - error expected"),
 			ExpErr: testhelper.MkExpErr(
-				`cannot convert the alpha value ("0xfff") to a valid number: ` +
+				`cannot convert the "alpha" value ("0xfff")` +
+					` to a valid number: ` +
 					`value out of range`),
 			v:      "0xfff",
 			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
@@ -65,7 +66,8 @@ func TestAlphaSetWithVal(t *testing.T) {
 		{
 			ID: testhelper.MkID("bad number - error expected"),
 			ExpErr: testhelper.MkExpErr(
-				`cannot convert the alpha value ("blah") to a valid number: ` +
+				`cannot convert the "alpha" value ("blah")` +
+					` to a valid number: ` +
 					`invalid syntax`),
 			v:      "blah",
 			expVal: color.RGBA{R: 0, G: 0, B: 0, A: 0}, //nolint:misspell
