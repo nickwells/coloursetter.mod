@@ -11,46 +11,9 @@ import (
 	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
-func TestRGBUseStandardColour(t *testing.T) {
-	testCases := []struct {
-		testhelper.ID
-		v   RGB
-		exp bool
-	}{
-		{
-			ID:  testhelper.MkID("nil entry: useStandardColours==true"),
-			exp: true,
-		},
-		{
-			ID: testhelper.MkID("empty entry: useStandardColours==true"),
-			v: RGB{
-				Families: colour.Families{},
-			},
-			exp: true,
-		},
-		{
-			ID: testhelper.MkID("one entry (StandardColours): useStandardColours==true"),
-			v: RGB{
-				Families: colour.Families{colour.StandardColours},
-			},
-			exp: true,
-		},
-		{
-			ID: testhelper.MkID("one entry (X11Colours): useStandardColours==false"),
-			v: RGB{
-				Families: colour.Families{colour.X11Colours},
-			},
-			exp: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		act := tc.v.useStandardColours()
-		testhelper.DiffBool(t, tc.IDStr(), "useStandardColours", act, tc.exp)
-	}
-}
-
 func TestRGBCurrentValue(t *testing.T) {
+	black := color.RGBA{R: 0, G: 0, B: 0, A: 0xff}          //nolint:misspell
+	white := color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff} //nolint:misspell
 	testCases := []struct {
 		testhelper.ID
 		v      color.RGBA //nolint:misspell
@@ -58,21 +21,20 @@ func TestRGBCurrentValue(t *testing.T) {
 	}{
 		{
 			ID:     testhelper.MkID("black"),
-			v:      color.RGBA{R: 0, G: 0, B: 0, A: 0xff}, //nolint:misspell
+			v:      black,
 			expVal: "black",
 		},
 		{
 			ID:     testhelper.MkID("white"),
-			v:      color.RGBA{R: 0xff, G: 0xff, B: 0xff, A: 0xff}, //nolint:misspell
+			v:      white,
 			expVal: "white",
 		},
 	}
 
 	for _, tc := range testCases {
 		s := RGB{Value: &tc.v}
-		actVal := s.CurrentValue()
 		testhelper.DiffString(t, tc.IDStr(), "CurrentValue",
-			actVal, tc.expVal)
+			s.CurrentValue(), tc.expVal)
 	}
 }
 
@@ -162,8 +124,8 @@ func TestRGBSetter(t *testing.T) {
 				Value: &val,
 			},
 			ParamVal: "blac",
-			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
-				` did you mean "black" or "black ink"?`),
+			SetWithValErr: testhelper.MkExpErr(`bad colour name: "blac",` +
+				` did you mean "black", "black ink" or "black-ink"?`),
 		},
 		{
 			ID: testhelper.MkID("goodSetter.badval.nonStd-CGA"),
@@ -174,7 +136,7 @@ func TestRGBSetter(t *testing.T) {
 				},
 			},
 			ParamVal: "blac",
-			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
+			SetWithValErr: testhelper.MkExpErr(`bad colour name: "blac",` +
 				` did you mean "black"?`),
 		},
 		{
@@ -187,7 +149,7 @@ func TestRGBSetter(t *testing.T) {
 				},
 			},
 			ParamVal: "blac",
-			SetWithValErr: testhelper.MkExpErr(`bad colour name ("blac"),`,
+			SetWithValErr: testhelper.MkExpErr(`bad colour name: "blac",` +
 				` did you mean "black"?`),
 		},
 		{
@@ -302,7 +264,8 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "RGBA{X: 0xf, R: 0xf, B: 0xf, G: 0xf}",
 			SetWithValErr: testhelper.MkExpErr(
-				`unknown colour component: "X", allowed values: A, B, G or R`),
+				`unknown colour component: "X",` +
+					` allowed values: "A", "B", "G" or "R"`),
 		},
 		{
 			ID: testhelper.MkID("goodSetter.badval.RGB.too-big"),
@@ -311,7 +274,7 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "RGBA{A: 0x100, R: 0xf, B: 0xf, G: 0xf}",
 			SetWithValErr: testhelper.MkExpErr(
-				`cannot convert the A value ("0x100") to a valid number:`,
+				`cannot convert the "A" value ("0x100") to a valid number:`,
 				` value out of range`),
 		},
 		{
@@ -321,7 +284,7 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "RGBA{A: -1, R: 0xf, B: 0xf, G: 0xf}",
 			SetWithValErr: testhelper.MkExpErr(
-				`cannot convert the A value ("-1") to a valid number:`,
+				`cannot convert the "A" value ("-1") to a valid number:`,
 				` invalid syntax`),
 		},
 		{
@@ -331,7 +294,7 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "RGBA{A: blah, R: 0xf, B: 0xf, G: 0xf}",
 			SetWithValErr: testhelper.MkExpErr(
-				`cannot convert the A value ("blah") to a valid number:`,
+				`cannot convert the "A" value ("blah") to a valid number:`,
 				` invalid syntax`),
 		},
 		{
@@ -341,8 +304,8 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "RGBA{A: 0xf, R: 0xf, B: 0xf, G: 0xf",
 			SetWithValErr: testhelper.MkExpErr(
-				`the parameter value starts with "RGBA{"`,
-				` but has no trailing '}'`),
+				`the colour definition starts with "RGBA{"`,
+				` but has no trailing "}"`),
 		},
 		{
 			ID: testhelper.MkID("goodSetter.badval.famAndCol.badFam"),
@@ -351,8 +314,8 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "pontone:black",
 			SetWithValErr: testhelper.MkExpErr(
-				`bad colour family name: "pontone" `,
-				`did you mean "pantone"?`),
+				`bad colour family name: "pontone", ` +
+					`did you mean "pantone"?`),
 		},
 		{
 			ID: testhelper.MkID("goodSetter.badval.famAndCol.badCol"),
@@ -361,8 +324,8 @@ func TestRGBSetter(t *testing.T) {
 			},
 			ParamVal: "web:blac",
 			SetWithValErr: testhelper.MkExpErr(
-				`bad colour name: "blac" `,
-				`did you mean "black"?`),
+				`bad colour name: "blac", ` +
+					`did you mean "black"?`),
 		},
 	}
 
