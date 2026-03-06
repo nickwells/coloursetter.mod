@@ -10,10 +10,15 @@ import (
 
 var familyAllowedValues = psetter.AllowedVals[string](colour.AllowedFamilies())
 
-const farrowAndBallAlias = "fnb"
+// family aliases
+const (
+	farrowAndBallAlias  = "fnb"
+	encycolorpediaAlias = "ecp"
+)
 
 var familyAliases = psetter.Aliases[string]{
-	farrowAndBallAlias: []string{colour.FarrowAndBallColours.Name()},
+	farrowAndBallAlias:  []string{colour.FarrowAndBallColours.Name()},
+	encycolorpediaAlias: []string{colour.EncycolorpediaColours.Name()},
 }
 
 // Families is a parameter setter for a
