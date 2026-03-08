@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/nickwells/colour.mod/v2 v2.4.0
-	github.com/nickwells/param.mod/v7 v7.0.0
+	github.com/nickwells/param.mod/v7 v7.0.1
 	github.com/nickwells/testhelper.mod/v2 v2.4.3
 )
 
