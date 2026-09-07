@@ -1,6 +1,6 @@
 module github.com/nickwells/coloursetter.mod/v2
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/nickwells/colour.mod/v2 v2.4.5
